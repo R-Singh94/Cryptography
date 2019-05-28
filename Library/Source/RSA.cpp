@@ -1,147 +1,33 @@
 #include <iostream>
-#include <random>
-#include <vector>
-#include <algorithm>
-#include <string>
 #include <sstream>
-#include <typeinfo>
 #include <cryptopp/sha.h>
 #include <cryptopp/hex.h>
-#include <cryptopp/integer.h>
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/algparam.h>
 #include <cryptopp/nbtheory.h>
 
-using namespace std;
-#include "PrivateKey.h"
-#include "PublicKey.h"
-
-using CryptoPP::SHA256;
-
-class RSA
-{
-private:
-    /**
-     * @brief Private - 1st Prime number
-     * 
-     */
-    CryptoPP::Integer* p;
-    /**
-     * @brief Private - 2nd Prime number
-     * 
-     */
-    CryptoPP::Integer* q;
-    /**
-     * @brief Private - Holds the product of the two large prime numbers
-     *          Modulus of RSA algorithm
-     * 
-     */
-    CryptoPP::Integer* n;
-    /**
-     * @brief Private - PHI that holds (p-1*q-1)
-     * 
-     */
-    CryptoPP::Integer* z;
-    /**
-     * @brief Private - Public exponent
-     * 
-     */
-    CryptoPP::Integer* e;
-    /**
-     * @brief Private - Private exponent
-     * 
-     */
-    CryptoPP::Integer* d;
-    /**
-     * @brief Private - Private Key
-     * 
-     */
-    PrivateKey* privateKey;
-    /**
-     * @brief Private - Public key
-     * 
-     */
-    PublicKey* publicKey;
-public:
-    /**
-     * @brief Constructor for RSA:
-     *  Initiates the process of generating the public and private key
-     * 
-     */
-    RSA();
-    ~RSA();
-    /**
-     * @brief Returns modulo inverse of 'a' with respect to 'm' using extended Euclid Algorithm
-     *          Used to retrieve the private exponenet
-     * 
-     * @param CryptoPP::Integer* : a 
-     * @param CryptoPP::Integer* : m 
-     * @return CryptoPP::Integer
-     */
-    static CryptoPP::Integer modularInverse(CryptoPP::Integer, CryptoPP::Integer);
-    /**
-     * @brief Get the Private Key object
-     * 
-     * @return PrivateKey* 
-     */
-    PrivateKey* getPrivateKey();
-    /**
-     * @brief Get the Public Key object
-     * 
-     * @return PublicKey* 
-     */
-    PublicKey* getPublicKey();
-    /**
-     * @brief Generates the Hash using SHA256
-     * 
-     * @param string : Text to be hashed
-     * @return string 
-     */
-    static string generateHash(const string&);
-    /**
-     * @brief Generates the signature using RSA
-     * 
-     * @param string& : The message to be sent to the recepient
-     * @return string : The RSA signature
-     */
-    string generateSignature(const string&);
-    /**
-     * @brief Validates the RSA signature at the recepient
-     * 
-     * @return true 
-     * @return false 
-     */
-    static bool validateSignature(const string&, const string&, PublicKey*);
-    /**
-     * @brief Generates a 128 byte prime number
-     * 
-     * @param CryptoPP::Integer*: input_param
-     * @param int : bitLenght 
-     */
-    static void generatePrime(CryptoPP::Integer*, int);
-    CryptoPP::Integer getE(){
-        return this->e->AbsoluteValue();
-    }
-    CryptoPP::Integer getZ(){
-        return this->z->AbsoluteValue();
-    }
-    CryptoPP::Integer getD(){
-        return this->d->AbsoluteValue();
-    }
-};
+#include "RSA.h"
 
 RSA::RSA()
 {
+    //Generating the 1st Integer
     this->p = new CryptoPP::Integer();
     RSA::generatePrime(this->p, 1024);
+    //Generating the 2nd Integer
     this->q = new CryptoPP::Integer();
     RSA::generatePrime(this->q, 1024);
+    //Computing the Modulo function
     this->n = new CryptoPP::Integer(this->p->AbsoluteValue() * this->q->AbsoluteValue());
+    //Generating the PHI
     this->z = new CryptoPP::Integer((this->p->AbsoluteValue()-1) * (this->q->AbsoluteValue()-1));
+    //Public Modules
     this->e = new CryptoPP::Integer(65537);
+    //Generating the Private Modules
     this->d = new CryptoPP::Integer(RSA::modularInverse(this->e->AbsoluteValue(), this->z->AbsoluteValue()));
+    //Creating the Private Key
     this->privateKey = new PrivateKey(this->n->AbsoluteValue(), this->d->AbsoluteValue());
+    //Creating the Public Key
     this->publicKey = new PublicKey(this->n->AbsoluteValue(), this->e->AbsoluteValue());
 }
 
@@ -209,9 +95,9 @@ PublicKey* RSA::getPublicKey(){
 string RSA::generateHash(const string& msg){
     const CryptoPP::byte* binaryData = (CryptoPP::byte*) msg.data();
     unsigned int msgLength = msg.size();
-    CryptoPP::byte msgDigest[SHA256::DIGESTSIZE];
+    CryptoPP::byte msgDigest[CryptoPP::SHA256::DIGESTSIZE];
 
-    SHA256().CalculateDigest(msgDigest, binaryData, msgLength);
+    CryptoPP::SHA256().CalculateDigest(msgDigest, binaryData, msgLength);
 
     CryptoPP::HexEncoder encoder;
     string output;
@@ -252,16 +138,4 @@ bool RSA::validateSignature(const string& msg, const string& signature, PublicKe
         return true;
     else
         return false;
-}
-
-int main(){
-    RSA inst;
-    cout<<"Value of Z: "<<inst.getZ()<<endl;
-    cout<<"Value of E: "<<inst.getE()<<endl;
-    cout<<"Value of D: "<<inst.getD()<<endl;
-    string input("Hello World");
-    string signature = inst.generateSignature(input);
-    cout<<"Signature : "<<signature<<endl;
-    PublicKey* publicKey = inst.getPublicKey();
-    cout<<"Validation : "<<RSA::validateSignature(input, signature, publicKey)<<endl;
 }
