@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <cryptopp/integer.h>
 
 class PublicKey
@@ -28,4 +29,16 @@ public:
      * @return CryptoPP::Integer
      */
     CryptoPP::Integer getE();
+    /**
+     * @brief Getter of the Modulus of RSA as a string
+     * 
+     * @return std::string 
+     */
+    std::string getNStr();
+    /**
+     * @brief Getter of the public Exponenet as a string
+     * 
+     * @return std::string 
+     */
+    std::string getEStr();
 };

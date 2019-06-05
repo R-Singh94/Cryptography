@@ -1,7 +1,7 @@
 #pragma once
 
-#include<string>
-#include<cryptopp/integer.h>
+#include <string>
+#include <cryptopp/integer.h>
 
 #include "PrivateKey.h"
 #include "PublicKey.h"
@@ -52,6 +52,11 @@ private:
      * 
      */
     PublicKey* publicKey;
+    /**
+     * @brief Private - Other User's Public Key
+     * 
+     */
+    PublicKey* externalPublicKey;
 public:
     /**
      * @brief Constructor for RSA:
@@ -109,13 +114,4 @@ public:
      * @param int : bitLenght 
      */
     static void generatePrime(CryptoPP::Integer*, int);
-    CryptoPP::Integer getE(){
-        return this->e->AbsoluteValue();
-    }
-    CryptoPP::Integer getZ(){
-        return this->z->AbsoluteValue();
-    }
-    CryptoPP::Integer getD(){
-        return this->d->AbsoluteValue();
-    }
 };
