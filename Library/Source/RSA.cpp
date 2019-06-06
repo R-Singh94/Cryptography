@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <exception>
 #include <cryptopp/sha.h>
 #include <cryptopp/hex.h>
 #include <cryptopp/cryptlib.h>
@@ -53,7 +54,7 @@ CryptoPP::Integer RSA::modularInverse(CryptoPP::Integer a, CryptoPP::Integer m){
     //Check for realtive prime
     //TO-DO: Change to a Logger function and Exception Handling
     if(!RelativelyPrime(a, m)){
-        cout<<"The numbers u("<<a<<"),v("<<m<<") are not relatively prime"<<endl;
+        cerr<<"The numbers u("<<a<<"),v("<<m<<") are not relatively prime"<<endl;
         exit(1);
     }
 
