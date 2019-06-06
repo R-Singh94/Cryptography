@@ -16,35 +16,25 @@ void validateSignature(string &response_string) {
     try{
         stringstream response_sstream;
         response_sstream << response_string;
+        //Reading the JSON as text into a property_tree
         boost::property_tree::ptree pTree;
         boost::property_tree::read_json(response_sstream, pTree);
+        //Extracting content from JSON
         string message(pTree.get<string>("message"));
         string signature(pTree.get<string>("signature"));
         CryptoPP::Integer n(pTree.get<string>("public_key.n").c_str());
         CryptoPP::Integer e(pTree.get<string>("public_key.e").c_str());
         PublicKey *senderPublicKey = new PublicKey(n,e);
         RSA instance;
+        //Validating the Signature
         if(instance.validateSignature(message, signature, senderPublicKey))
             cout<<"The Signature is Valid. The message is obtained from an authentic user.\n";
         else
             cout<<"The Signature is Invalid.\n";
     }
     catch(exception e){
-        cerr << "Exception Raised : " << e.what() << endl;
+        cerr << "Exception Raised : " << e.what() << '\n';
     }
-
-    /*string n_str(response_json.);
-    CryptoPP::Integer n(n_str.c_str());
-    string e_str(response_json["public_key"]["e"]);
-    CryptoPP::Integer e(e_str.c_str());
-    string message(response_json["message"]);
-    string signature(response_json["signature"]);
-    PublicKey senderPublicKey(n,e);
-    RSA instance;
-    if(instance.validateSignature(message, signature, &senderPublicKey))
-        cout<<"The Signature is Valid. The Sender is Authentic\n";
-    else
-        cout<<"The Signature is Invalid\n";*/
 }
 
 size_t writeFunction(void *ptr, size_t size, size_t nmemb, std::string* data) {
